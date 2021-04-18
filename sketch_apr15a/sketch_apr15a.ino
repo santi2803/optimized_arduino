@@ -19,12 +19,12 @@ Conection LCD to Arduino
 =============================*/
 
 /*
-  LCD RS to PIN 22
-  LCD E to PIN 23
-  LCD D4 to PIN 24
-  LCD D5 to PIN 25
-  LCD D6 to PIN 26
-  LCD D7 to PIN 27
+  LCD RS to PIN 10
+  LCD E to PIN 11
+  LCD D4 to PIN 12
+  LCD D5 to PIN 13
+  LCD D6 to PIN 14
+  LCD D7 to PIN 15
 */
 LiquidCrystal lcd(10, 11, 12, 13, 14, 15);
 
@@ -64,8 +64,12 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
  * Global Variables
 ====================================*/
 int digito = 0, opc, uid, posicion, contador, dato, reporte[8], member;
-char codigo[4], password[] = "2020", opcMenuDisenador[] = "1234567", opcMenuMember[] = "123";
-bool passD = false, optMenuDisenador = false, pwMember = false, optMenuMember = false, newpin = false, sa = false, ja = false, ma = false, pinadmin = false;
+int IN1 = 16;
+int IN2 = 17;
+int IN3 = 18;
+int IN4 = 19;
+char codigo[4], password[] = "2020", opcMenuDisenador[] = "1234567", opcMenuMember[] = "123", optsMotor[] = "2468";
+bool passD = false, optMenuDisenador = false, pwMember = false, optMenuMember = false, newpin = false, sa = false, ja = false, ma = false, pinadmin = false, motor = false;
 short pos_libre;
 const char* nombre[3] = {"Santiago Ruiz", "Miguel Salamanca", "Juan Avellaneda"};
 
@@ -74,7 +78,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   rtc.begin();
-  rtc.adjust(DateTime(__DATE__, __TIME__));
+  //rtc.adjust(DateTime(__DATE__, __TIME__));
   
   lcd.begin(16, 2);
   //char pw_SA[4] = "1234", pw_MA[4] = "4321", pw_JA[4] = "1324";
@@ -92,6 +96,11 @@ void setup() {
   contador = 0;
   posicion = 0;
   */
+  // INITIALIZE PIN MOTOR
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
   
   bienvenida();
 }
@@ -131,6 +140,7 @@ void showDateTime() {
 
 void passw() {
   char tecla = keypad.getKey();
+  
   if (tecla != NO_KEY) {
     codigo[digito] = tecla;
     lcd.setCursor(digito+5, 2);
@@ -200,6 +210,7 @@ void menuDisenadorOpt() {
 
       if (opc == opcMenuDisenador[5]) {
         // Motor
+        menuMotor();
       }
 
       if (opc == opcMenuDisenador[6]) {
@@ -421,7 +432,9 @@ void newPin() {
     }
   }
 }
-
+/*=============================================
+ * PIN ADMIN AND VERIFY PASSWORD
+===============================================*/
 void pinAdmin() {
   char tecla = keypad.getKey();
   if (tecla != NO_KEY) {
@@ -449,6 +462,106 @@ void pinAdmin() {
       }
     }
   }
+}
+/*================================================
+ * GET OPT MOTOR AND SEND MOVE
+==================================================*/
+void motorOpt() {
+    char tecla = keypad.getKey();
+    if (tecla != NO_KEY) {
+      opc = tecla;
+      digito++;
+      delay(50);
+      if (digito == 1) {
+        motor = false;
+        if (opc == optsMotor[0]) {
+          // Up
+          Serial.println("UP");
+          digitalWrite(IN1, HIGH);
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, LOW);
+          delay(20);
+          menuMotor();
+        }
+
+        if (opc == optsMotor[3]) {
+          // Down
+          Serial.println("DOWN");
+          digitalWrite(IN1, HIGH);
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, LOW);
+          delay(20);
+          menuMotor();
+        }
+
+        if (opc == optsMotor[2]) {
+          // Right
+          Serial.println("RIGHT");
+          digitalWrite(IN1, HIGH);  // paso 1 
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, LOW);
+          delay(20);
+
+          digitalWrite(IN1, HIGH); // paso 2
+          digitalWrite(IN2, HIGH);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, LOW);
+          delay(20);
+
+          digitalWrite(IN1, LOW); // paso 3
+          digitalWrite(IN2, HIGH);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, LOW);
+          delay(20);
+
+          digitalWrite(IN1, LOW); // paso 4
+          digitalWrite(IN2, HIGH);
+          digitalWrite(IN3, HIGH);
+          digitalWrite(IN4, LOW);
+          delay(20);
+          digitalWrite(IN1, LOW);  // paso 5 
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, HIGH);
+          digitalWrite(IN4, LOW);
+          delay(20);
+
+          digitalWrite(IN1, LOW); // paso 6
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, HIGH);
+          digitalWrite(IN4, HIGH);
+          delay(20);
+
+          digitalWrite(IN1, LOW); // paso 7
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, HIGH);
+          delay(20);
+
+          digitalWrite(IN1, HIGH); // paso 8
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, HIGH);
+          delay(20);
+          menuMotor();
+        }
+
+        if (opc == optsMotor[1]) {
+          // Left
+          Serial.println("LEFT");
+          digitalWrite(IN1, HIGH);
+          digitalWrite(IN2, LOW);
+          digitalWrite(IN3, LOW);
+          digitalWrite(IN4, HIGH);
+          delay(20);
+          menuMotor();
+        }
+        
+        
+      }
+    }
 }
 
 /*===========================================
@@ -651,7 +764,9 @@ void buscar_pos_libre() {
     contador++;
   } while (pos_libre == false);
 }
-
+/*==============================================
+ * OBTENER PASSWORD ADMIN
+================================================*/
 void getPasswordAdmin() {
   digito = 0;
   codigo[0]="";
@@ -664,5 +779,18 @@ void getPasswordAdmin() {
   pinadmin = true;
   while (pinadmin) {
     pinAdmin();
+  }
+}
+
+void menuMotor() {
+  digito = 0;
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("2).Up  8).Down");
+  lcd.setCursor(0,1);
+  lcd.print("6).Right 4).Left");
+  motor = true;
+  while(motor) {
+    motorOpt();
   }
 }
