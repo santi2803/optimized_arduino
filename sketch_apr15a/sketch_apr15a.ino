@@ -68,7 +68,9 @@ int IN1 = 16;
 int IN2 = 17;
 int IN3 = 18;
 int IN4 = 19;
-char codigo[4], password[] = "2020", opcMenuDisenador[] = "1234567", opcMenuMember[] = "123", optsMotor[] = "2468";
+int steps = 0;
+int n_steps = (4 * 1.4222222222);
+char codigo[4], password[] = "2021", opcMenuDisenador[] = "1234567", opcMenuMember[] = "123", optsMotor[] = "469";
 bool passD = false, optMenuDisenador = false, pwMember = false, optMenuMember = false, newpin = false, sa = false, ja = false, ma = false, pinadmin = false, motor = false;
 short pos_libre;
 const char* nombre[3] = {"Santiago Ruiz", "Miguel Salamanca", "Juan Avellaneda"};
@@ -474,89 +476,34 @@ void motorOpt() {
       delay(50);
       if (digito == 1) {
         motor = false;
+        // MOVE TO LEFT
         if (opc == optsMotor[0]) {
-          // Up
-          Serial.println("UP");
-          digitalWrite(IN1, HIGH);
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, LOW);
-          delay(20);
-          menuMotor();
-        }
-
-        if (opc == optsMotor[3]) {
-          // Down
-          Serial.println("DOWN");
-          digitalWrite(IN1, HIGH);
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, LOW);
-          delay(20);
-          menuMotor();
-        }
-
-        if (opc == optsMotor[2]) {
-          // Right
-          Serial.println("RIGHT");
-          digitalWrite(IN1, HIGH);  // paso 1 
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, LOW);
-          delay(20);
-
-          digitalWrite(IN1, HIGH); // paso 2
-          digitalWrite(IN2, HIGH);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, LOW);
-          delay(20);
-
-          digitalWrite(IN1, LOW); // paso 3
-          digitalWrite(IN2, HIGH);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, LOW);
-          delay(20);
-
-          digitalWrite(IN1, LOW); // paso 4
-          digitalWrite(IN2, HIGH);
-          digitalWrite(IN3, HIGH);
-          digitalWrite(IN4, LOW);
-          delay(20);
-          digitalWrite(IN1, LOW);  // paso 5 
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, HIGH);
-          digitalWrite(IN4, LOW);
-          delay(20);
-
-          digitalWrite(IN1, LOW); // paso 6
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, HIGH);
-          digitalWrite(IN4, HIGH);
-          delay(20);
-
-          digitalWrite(IN1, LOW); // paso 7
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, HIGH);
-          delay(20);
-
-          digitalWrite(IN1, HIGH); // paso 8
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, HIGH);
-          delay(20);
-          menuMotor();
-        }
-
-        if (opc == optsMotor[1]) {
           // Left
-          Serial.println("LEFT");
-          digitalWrite(IN1, HIGH);
-          digitalWrite(IN2, LOW);
-          digitalWrite(IN3, LOW);
-          digitalWrite(IN4, HIGH);
-          delay(20);
+          while (steps<n_steps) {
+            step_left();
+            steps = steps + 1;
+          }
+          delay(100);
+          off();
           menuMotor();
+        }
+        // MOVE TO RIGHT
+        if (opc == optsMotor[1]) {
+          // Right
+          while (steps<n_steps) {
+            step_right();
+            steps = steps + 1;
+          }
+          off();
+          menuMotor();
+        }
+        // EXIT
+        if (opc == optsMotor[2]) {
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Bye...");
+          delay(500);
+          menuDisenador();
         }
         
         
@@ -781,16 +728,86 @@ void getPasswordAdmin() {
     pinAdmin();
   }
 }
-
+/*=======================================================
+ * MUESTRA MENU DEL MOTOR Y LLAMA METODO PARA CAPTURAR TECLAS
+=========================================================*/
 void menuMotor() {
   digito = 0;
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("2).Up  8).Down");
+  lcd.print("4)Left  6)Right");
   lcd.setCursor(0,1);
-  lcd.print("6).Right 4).Left");
+  lcd.print("9).Exit");
   motor = true;
   while(motor) {
     motorOpt();
   }
+}
+
+/*=======================================================
+ * PASOS A LA DERECHA
+=========================================================*/
+void step_right() {
+  digitalWrite(IN1, HIGH);  // paso 1 
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  delay(20);
+  
+  digitalWrite(IN1, LOW); // paso 2
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  delay(20);
+  
+  digitalWrite(IN1, LOW); // paso 3
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, HIGH);
+  delay(20);
+  
+  digitalWrite(IN1, HIGH); // paso 4
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  delay(20);
+}
+/*=======================================================
+ * PASOS A LA INZQUIERDA
+=========================================================*/
+void step_left() {
+  digitalWrite(IN1, LOW);  // paso 1 
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, HIGH);
+  delay(20);
+  
+  digitalWrite(IN1, LOW); // paso 2
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  delay(20);
+  
+  digitalWrite(IN1, HIGH); // paso 3
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  delay(20);
+  
+  digitalWrite(IN1, HIGH); // paso 4
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  delay(20);
+}
+/*=======================================================
+ * APAGA MOTOR
+=========================================================*/
+void off() {
+  steps = 0;
+  digitalWrite(IN1, LOW); // paso 4
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  delay(20);
 }
