@@ -63,15 +63,23 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 /*=============================
  * Global Variables
 ====================================*/
-int digito = 0, opc, uid, posicion, contador, dato, reporte[8], member;
+int digito = 0, opc, uid, posicion, contador, dato, reporte[8], member, opcDateTime;
+int year;
+int month;
+int day;
+int hour;
+int minute;
+int second;
 int IN1 = 16;
 int IN2 = 17;
 int IN3 = 18;
 int IN4 = 19;
 int steps = 0;
 int n_steps = (4 * 1.4222222222);
-char codigo[4], password[] = "2021", opcMenuDisenador[] = "1234567", opcMenuMember[] = "123", optsMotor[] = "469";
+char codigo[4], password[] = "2021", opcMenuDisenador[] = "1234567", opcMenuMember[] = "123", optsMotor[] = "469", optDateTime[] = "12", cod[2], zero[] = "0";;
+char m[2], d[2], h[2], mi[2], s[2];
 bool passD = false, optMenuDisenador = false, pwMember = false, optMenuMember = false, newpin = false, sa = false, ja = false, ma = false, pinadmin = false, motor = false;
+bool date = false, getTime = false, optDate = false;
 short pos_libre;
 const char* nombre[3] = {"Santiago Ruiz", "Miguel Salamanca", "Juan Avellaneda"};
 
@@ -202,6 +210,21 @@ void menuDisenadorOpt() {
 
       if (opc == opcMenuDisenador[3]) {
         // Cambiar fecha
+          digito = 0;
+          getYear();
+          /*
+          delay(500);
+          getMonth();
+          delay(500);
+          getDay();
+          delay(500);
+          getHour();
+          delay(500);
+          getMinute();
+          delay(500);
+          getSecond();
+          delay(500);
+          */
       }
 
       if (opc == opcMenuDisenador[4]) {
@@ -446,6 +469,8 @@ void pinAdmin() {
     digito++;
     if (digito == 4) {
       pinadmin = false;
+      
+      // Pin admin get reports
       if (opc == opcMenuDisenador[4]) {
         char res_pin_SA[4];
         EEPROM.get(0, res_pin_SA);
@@ -509,6 +534,165 @@ void motorOpt() {
         
       }
     }
+}
+/*==================================================
+ * CHANGE DATE OR TIME
+====================================================*/
+
+void setDate() {
+  Serial.println(year);
+  Serial.println(month);
+  Serial.println(day);
+  Serial.println(hour);
+  Serial.println(minute);
+  Serial.println(second);
+  rtc.adjust(DateTime(year,month,day,hour, minute, second));
+}
+
+void getHourDate() {
+  char tecla = keypad.getKey();
+  if (tecla != NO_KEY) {
+    h[digito] = tecla;
+    lcd.setCursor(digito+5, 2);
+    lcd.print(tecla);
+    digito++;
+    delay(200);
+    if (digito == 2) {
+      getTime = false;
+      if (h[0] == zero[0]) {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("god");
+        delay(500);
+        hour = atoi(&h[1]);
+        getMinute();
+      } else {
+        hour = atoi(h);
+        getMinute();
+      }
+    }
+  }
+}
+
+void getMinuteDate() {
+  char tecla = keypad.getKey();
+  if (tecla != NO_KEY) {
+    mi[digito] = tecla;
+    lcd.setCursor(digito+5, 2);
+    lcd.print(tecla);
+    digito++;
+    delay(200);
+    if (digito == 2) {
+      getTime = false;
+      if (cod[0] == zero[0]) {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("god");
+        delay(500);
+        minute = atoi(&mi[1]);
+        getSecond();
+      } else {
+        minute = atoi(mi);
+        getSecond();
+      }
+    }
+  }
+}
+
+void getSecondDate() {
+  char tecla = keypad.getKey();
+  if (tecla != NO_KEY) {
+    s[digito] = tecla;
+    lcd.setCursor(digito+5, 2);
+    lcd.print(tecla);
+    digito++;
+    delay(200);
+    if (digito == 2) {
+      getTime = false;
+      if (cod[0] == zero[0]) {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("god");
+        delay(500);
+        second = atoi(&s[1]);
+        setDate();
+        delay(200);
+        menuDisenador();
+      } else {
+        second = atoi(s);
+        setDate();
+        delay(200);
+        menuDisenador();
+      }
+    }
+  }
+}
+
+void getYearDate() {
+  char tecla = keypad.getKey();
+  if (tecla != NO_KEY) {
+    codigo[digito] = tecla;
+    lcd.setCursor(digito+5, 2);
+    lcd.print(tecla);
+    digito++;
+    delay(200);
+    if (digito == 4) {
+      getTime = false;
+      
+      year = atoi(codigo);
+      getMonth();
+    }
+  }
+}
+
+void getMonthDate() {
+  char tecla = keypad.getKey();
+  if (tecla != NO_KEY) {
+    m[digito] = tecla;
+    lcd.setCursor(digito+5, 2);
+    lcd.print(tecla);
+    digito++;
+    delay(200);
+    if (digito == 2) {
+      getTime = false;
+      if (cod[0] == zero[0]) {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("god");
+        delay(500);
+        month = atoi(&m[1]);
+        getDay();
+      } else {
+        month = atoi(m);
+        getDay();
+      }
+    }
+  }
+}
+
+void getDayDate() {
+  char tecla = keypad.getKey();
+  if (tecla != NO_KEY) {
+    d[digito] = tecla;
+    lcd.setCursor(digito+5, 2);
+    lcd.print(tecla);
+    digito++;
+    delay(200);
+    if (digito == 2) {
+      getTime = false;
+      if (cod[0] == zero[0]) {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("god");
+        delay(500);
+        day = atoi(&d[1]);
+        getHour();
+      } else {
+        day = atoi(d);
+        getHour();
+      }
+    }
+  }
 }
 
 /*===========================================
@@ -726,6 +910,94 @@ void getPasswordAdmin() {
   pinadmin = true;
   while (pinadmin) {
     pinAdmin();
+  }
+}
+/*=======================================================
+ * MUESTRA MENU DEL CAMBIO DE FECHA Y HORA
+=========================================================*/
+
+/*=======================================================
+ * PEDIR AÑO MES Y DIA
+=========================================================*/
+void getYear() {
+  digito = 0;
+  codigo[0]="";
+  codigo[1]="";
+  codigo[2]="";
+  codigo[3]="";
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Ingrese year");
+  date = true;
+  while (date) {
+    getYearDate();
+  }
+}
+
+void getMonth() {
+  digito = 0;
+  cod[0]="";
+  cod[1]="";
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Ingrese mes");
+  date = true;
+  while (date) {
+    getMonthDate();
+  }
+}
+
+void getDay() {
+  digito = 0;
+  cod[0]="";
+  cod[1]="";
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Ingrese dia");
+  date = true;
+  while (date) {
+    getDayDate();
+  }
+}
+/*=======================================================
+ * PEDIR HORA MINUTO Y SEGUNDO
+=========================================================*/
+void getHour() {
+  digito = 0;
+  cod[0]="";
+  cod[1]="";
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Ingrese hora");
+  getTime = true;
+  while (getTime) {
+    getHourDate();
+  }
+}
+
+void getMinute() {
+  digito = 0;
+  cod[0]="";
+  cod[1]="";
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Ingrese min");
+  getTime = true;
+  while (getTime) {
+    getMinuteDate();
+  }
+}
+
+void getSecond() {
+  digito = 0;
+  cod[0]="";
+  cod[1]="";
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Ingrese seg");
+  getTime = true;
+  while (getTime) {
+    getSecondDate();
   }
 }
 /*=======================================================
